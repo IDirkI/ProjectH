@@ -6,26 +6,27 @@ using AssociatedLegendrePolynomials
 # (0,θ,Φ) is considered the nucleus of the atom. 
 # r is always the distance between the nucleus and the electron.
 
-#Create Input
+# Create Input
 data = range(-1, stop = 1, length =  60)
 x, y, z = mgrid(data, data, data)
 
-#Transition Coordinates
+# Transition Coordinates
 r = @. √(x^2 + y^2 + z^2) 
 θ = @. atan(y, x)
 Φ = @. acos(z/(√(x^2 + y^2 + z^2)))
 
-#Constants
+# Constants
 a = 0.052941 #nm
 e = ℯ
 
-#Set Quantum Numbers
-n = 1
-l = 0
+# Set Quantum Numbers
+n = 2
+l = 1
 m = 0
+# Set Nucleus Charge
 Z = 1
 
-#Associated Laguerre Polynomial Generator Lₖʲ(x)
+# Associated Laguerre Polynomial Generator Lₖʲ(x)
 function L(j, k, x) 
     f = 0;
 
@@ -41,11 +42,36 @@ end
 Θ(θ) = @. (-1)^m * Nlm(l,m) * Plm(l,m, cos(θ))
 P(Φ) = @. e^(im * Φ * m)
 
-#Combined, Full Wave Function
+# Calculate the Energy of the electron
+E = @. (-13.6056)/(n^2)
+
+# Combined, Full Wave Function
 Ψ(r, θ, Φ) = @. ψ(r) * Θ(θ) * P(Φ)
 
-#Calculate the Expactation Value of the electron
+# Calculate the Expactation Value of the electron
 expectation = @. abs(Ψ(r, θ, Φ))^2
+
+# Creates Annotation for Energy Render
+layout = Layout(
+    scene=attr(
+        annotations=[
+        attr(
+            showarrow=false,
+            x=0,
+            y=0,
+            z=1,
+            text= "$E eV",
+            textangle=0,
+            ax=0,
+            ay=-75,
+            font=attr(
+                color="#EE4A77",
+                size=24
+            )
+            )
+        ]
+    ),
+)
 
 PlotlyJS.plot(volume(
     x=x[:],
@@ -56,4 +82,4 @@ PlotlyJS.plot(volume(
     isomax=0.7,
     opacity=0.1, # needs to be small to see through all surfaces
     surface_count=100, # needs to be a large number for good volume rendering
-))
+), layout)
